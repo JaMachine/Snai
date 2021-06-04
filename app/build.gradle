@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.owa.snai.store.app"
-        minSdkVersion 16
+        minSdkVersion 23
         targetSdkVersion 30
         multiDexEnabled true
         versionCode 1

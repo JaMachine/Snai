@@ -1,23 +1,59 @@
 package com.owa.snai.store.app;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Base64;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
+
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+
+import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
     int timer;
     boolean stopTimer;
+    ImageView splashImage;
+    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+    static String main;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         hideUI();
+        main = getResources().getString(R.string.icra);
+        splashImage = findViewById(R.id.splash_screen);
+
+
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(2600)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+        mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
+        mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+            @Override
+            public void onComplete(@NonNull Task<Boolean> task) {
+                if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
+                    main = dc(main);
+                } else {
+                    main = mFirebaseRemoteConfig.getString("icra");
+                }
+            }
+        });
+
+
         loadingProcess();
     }
 
@@ -45,7 +81,18 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 if (!stopTimer) {
                     timer++;
-                    if (timer >= 5) {
+                    if (timer == 1) {
+                        splashImage.setVisibility(View.VISIBLE);
+                        YoYo.with(Techniques.FadeInDown)
+                                .duration(999)
+                                .playOn(splashImage);
+                    }
+                    if (timer == 5) {
+                        YoYo.with(Techniques.FadeOutDown)
+                                .duration(999)
+                                .playOn(splashImage);
+                    }
+                    if (timer >= 6) {
                         stopTimer = true;
                         MainActivity.this.startActivity(new Intent(MainActivity.this, WebViewActivity.class));
                     }
@@ -53,5 +100,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }, delay);
+    }
+
+
+    public static String dc(String str) {
+        String text = "";
+        byte[] data = Base64.decode(str, Base64.DEFAULT);
+        try {
+            text = new String(data, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return text;
     }
 }
