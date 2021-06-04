@@ -38,6 +38,7 @@ public class WebViewActivity extends AppCompatActivity {
     private static final int INPUT_FILE_REQUEST_CODE = 1;
     private static final int FILECHOOSER_RESULTCODE = 1;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +56,7 @@ public class WebViewActivity extends AppCompatActivity {
         webView.getSettings().setLoadsImagesAutomatically(true);
         if (savedInstanceState != null)
             webView.restoreState(savedInstanceState.getBundle("webViewState"));
-        webView.loadUrl("https://owa.snai.store/click.php?key=pnyad54mrubjdhwh23lr");
+        webView.loadUrl(main);
 
         webView.setWebChromeClient(new WebChromeClient() {
             private File createImageFile() throws IOException {
