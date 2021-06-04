@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "997628623383",
+    "project_id": "comowasnaistoreapp",
+    "storage_bucket": "comowasnaistoreapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997628623383:android:5d786c44572b565363fa52",
+        "android_client_info": {
+          "package_name": "com.owa.snai.store.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "997628623383-6ahpfe0ulhn9j8flanhqjg4bo3mh3pd5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcEKsW-HvlAun2U1bRR2vThtGO0DI6Ht0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "997628623383-6ahpfe0ulhn9j8flanhqjg4bo3mh3pd5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
