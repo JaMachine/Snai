@@ -6,8 +6,13 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +25,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.File;
@@ -27,9 +33,15 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.owa.snai.store.app.MainActivity.BroadcastStringForAction;
+import static com.owa.snai.store.app.MainActivity.dc;
 import static com.owa.snai.store.app.MainActivity.main;
 
 public class WebViewActivity extends AppCompatActivity {
+    boolean connected;
+    private IntentFilter intentFilter;
+    RelativeLayout netStatus;
+
     WebView webView;
     private ValueCallback<Uri> mUploadMessage;
     private Uri mCapturedImageURI = null;
@@ -45,18 +57,20 @@ public class WebViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_web_view);
         hideUI();
 
+        netStatus = findViewById(R.id.web_view_internet_status);
+
+
         webView = findViewById(R.id.web_view);
         if (Build.VERSION.SDK_INT >= 23 && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(WebViewActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
         }
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new customWebViewClient());
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setAllowFileAccess(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setLoadsImagesAutomatically(true);
         if (savedInstanceState != null)
             webView.restoreState(savedInstanceState.getBundle("webViewState"));
-        webView.loadUrl(main);
 
         webView.setWebChromeClient(new WebChromeClient() {
             private File createImageFile() throws IOException {
@@ -72,6 +86,7 @@ public class WebViewActivity extends AppCompatActivity {
                 return imageFile;
 
             }
+
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePath, WebChromeClient.FileChooserParams fileChooserParams) {
                 if (mFilePathCallback != null) {
                     mFilePathCallback.onReceiveValue(null);
@@ -110,6 +125,7 @@ public class WebViewActivity extends AppCompatActivity {
                 startActivityForResult(chooserIntent, INPUT_FILE_REQUEST_CODE);
                 return true;
             }
+
             public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
                 mUploadMessage = uploadMsg;
                 File imageStorageDir = new File(
@@ -132,9 +148,10 @@ public class WebViewActivity extends AppCompatActivity {
                 i.setType("image/*");
                 Intent chooserIntent = Intent.createChooser(i, "Image Chooser");
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS
-                        , new Parcelable[] { captureIntent });
+                        , new Parcelable[]{captureIntent});
                 startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
             }
+
             public void openFileChooser(ValueCallback<Uri> uploadMsg,
                                         String acceptType,
                                         String capture) {
@@ -142,7 +159,53 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
         });
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(BroadcastStringForAction);
+        Intent intent = new Intent(this, ConnectionService.class);
+        startService(intent);
+        if (isOnline(getApplicationContext()))
+            showWebView();
+        else hideWebView();
+    }
 
+    public BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(BroadcastStringForAction)) {
+                if (intent.getStringExtra("online_status").equals("true"))
+                    showWebView();
+                else hideWebView();
+            }
+        }
+    };
+
+    public boolean isOnline(Context context) {
+        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = manager.getActiveNetworkInfo();
+        if (info != null && info.isConnectedOrConnecting()) return true;
+        else return false;
+    }
+
+    public void showWebView() {
+        if (!connected) {
+            netStatus.setVisibility(View.GONE);
+            webView.loadUrl(main);
+            webView.setVisibility(View.VISIBLE);
+            connected = true;
+        }
+    }
+
+    public void hideWebView() {
+        connected = false;
+        netStatus.setVisibility(View.VISIBLE);
+        webView.setVisibility(View.GONE);
+    }
+
+    public class customWebViewClient extends WebViewClient {
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            if (Uri.parse(url).getHost().contains(dc("c25haQ=="))) return false;
+            else return true;
+        }
     }
 
     @Override
@@ -201,6 +264,7 @@ public class WebViewActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         hideUI();
+        registerReceiver(broadcastReceiver, intentFilter);
         super.onResume();
     }
 
@@ -212,4 +276,17 @@ public class WebViewActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
+    @Override
+    protected void onRestart() {
+        registerReceiver(broadcastReceiver, intentFilter);
+        hideUI();
+        super.onRestart();
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(broadcastReceiver);
+        hideUI();
+        super.onPause();
+    }
 }

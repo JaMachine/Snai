@@ -3,17 +3,49 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/loading_screen"
     android:layout_width="match_parent"
-    android:background="@color/white"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".MainActivity">
+
+
+    <RelativeLayout
+        android:id="@+id/internet_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_margin="29dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/main_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
+            android:text="Connect to the internet"
+            android:textColor="@color/dark"
+            android:textSize="29sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/main_text"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
+            android:text="You're offline. Check your connection."
+            android:textColor="@color/gray"
+            android:textSize="25sp" />
+
+    </RelativeLayout>
 
     <ImageView
         android:id="@+id/splash_screen"
         android:layout_width="wrap_content"
-        android:visibility="gone"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_marginHorizontal="39dp"
-        android:src="@drawable/splash" />
+        android:src="@drawable/splash"
+        android:visibility="gone" />
 
 </RelativeLayout>

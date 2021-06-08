@@ -3,13 +3,19 @@ package com.owa.snai.store.app;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Base64;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
@@ -21,6 +27,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
+    boolean connected;
+    public static String BroadcastStringForAction = "checkinternet";
+    private IntentFilter intentFilter;
+    RelativeLayout internetStatus;
+
+
     int timer;
     boolean stopTimer;
     ImageView splashImage;
@@ -34,33 +46,25 @@ public class MainActivity extends AppCompatActivity {
         hideUI();
         main = getResources().getString(R.string.icra);
         splashImage = findViewById(R.id.splash_screen);
+        internetStatus = findViewById(R.id.internet_status);
 
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(BroadcastStringForAction);
+        Intent intent = new Intent(this, ConnectionService.class);
+        startService(intent);
+        if (isOnline(getApplicationContext()))
+            startApp();
+        else showConnectionMessage();
 
-        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setMinimumFetchIntervalInSeconds(2600)
-                .build();
-        mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
-        mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
-        mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
-            @Override
-            public void onComplete(@NonNull Task<Boolean> task) {
-                if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
-                    main = dc(main);
-                } else {
-                    main = mFirebaseRemoteConfig.getString("icra");
-                }
-            }
-        });
-
-
-        loadingProcess();
     }
 
     @Override
     public void onResume() {
         hideUI();
-        loadingProcess();
+        registerReceiver(broadcastReceiver, intentFilter);
+        if (isOnline(getApplicationContext()))
+            startApp();
+        else showConnectionMessage();
         super.onResume();
     }
 
@@ -112,5 +116,69 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return text;
+    }
+
+
+    public BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(BroadcastStringForAction)) {
+                if (intent.getStringExtra("online_status").equals("true"))
+                    startApp();
+                else showConnectionMessage();
+            }
+        }
+    };
+
+    public boolean isOnline(Context context) {
+        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = manager.getActiveNetworkInfo();
+        if (info != null && info.isConnectedOrConnecting()) return true;
+        else return false;
+    }
+
+
+    void showConnectionMessage() {
+        internetStatus.setVisibility(View.VISIBLE);
+        connected = false;
+    }
+
+    void startApp() {
+        if (!connected) {
+            internetStatus.setVisibility(View.GONE);
+            mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+            FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                    .setMinimumFetchIntervalInSeconds(2600)
+                    .build();
+            mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+            mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
+            mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+                @Override
+                public void onComplete(@NonNull Task<Boolean> task) {
+                    if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
+                        main = dc(main);
+                    } else {
+                        main = mFirebaseRemoteConfig.getString("icra");
+                    }
+                }
+            });
+
+            loadingProcess();
+            connected = true;
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        registerReceiver(broadcastReceiver, intentFilter);
+        hideUI();
+        super.onRestart();
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(broadcastReceiver);
+        hideUI();
+        super.onPause();
     }
 }

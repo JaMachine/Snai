@@ -1,10 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     android:id="@+id/web_view_screen"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".WebViewActivity">
+
+    <RelativeLayout
+        android:id="@+id/web_view_internet_status"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_margin="29dp"
+        android:gravity="center">
+
+
+        <TextView
+            android:id="@+id/main_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
+            android:text="Connect to the internet"
+            android:textColor="@color/dark"
+            android:textSize="29sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/main_text"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
+            android:text="You're offline. Check your connection."
+            android:textColor="@color/gray"
+            android:textSize="25sp" />
+
+    </RelativeLayout>
 
     <WebView
         android:id="@+id/web_view"
