@@ -64,7 +64,7 @@ public class WebViewActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23 && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(WebViewActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
         }
-        webView.setWebViewClient(new customWebViewClient());
+        webView.setWebViewClient(new WebViewClient());
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setAllowFileAccess(true);
         webView.getSettings().setDomStorageEnabled(true);
@@ -199,13 +199,6 @@ public class WebViewActivity extends AppCompatActivity {
         connected = false;
         netStatus.setVisibility(View.VISIBLE);
         webView.setVisibility(View.GONE);
-    }
-
-    public class customWebViewClient extends WebViewClient {
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            if (Uri.parse(url).getHost().contains(dc("c25haQ=="))) return false;
-            else return true;
-        }
     }
 
     @Override
