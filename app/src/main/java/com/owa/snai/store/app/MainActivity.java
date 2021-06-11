@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        new InitializeOneSignal().init(this);
         hideUI();
         main = getResources().getString(R.string.icra);
         splashImage = findViewById(R.id.splash_screen);
