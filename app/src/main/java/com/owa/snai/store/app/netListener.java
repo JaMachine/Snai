@@ -11,9 +11,9 @@ import android.os.SystemClock;
 
 import androidx.annotation.Nullable;
 
-import static com.owa.snai.store.app.MainActivity.act;
+import static com.owa.snai.store.app.Main.act;
 
-public class ConnectionService extends Service {
+public class netListener extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -33,7 +33,7 @@ public class ConnectionService extends Service {
             h.postDelayed(r, 1 * 1000 - SystemClock.elapsedRealtime() % 1000);
             Intent intent = new Intent();
             intent.setAction(act);
-            intent.putExtra("online_status", "" + net(ConnectionService.this));
+            intent.putExtra("online_status", "" + net(netListener.this));
             sendBroadcast(intent);
         }
     };

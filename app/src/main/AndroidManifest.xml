@@ -19,14 +19,14 @@
         <activity
             android:name=".Web"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".Main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <service
-            android:name=".ConnectionService"
+            android:name=".netListener"
             android:enabled="true"
             android:exported="true" />
     </application>

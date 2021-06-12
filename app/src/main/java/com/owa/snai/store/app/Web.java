@@ -32,8 +32,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static com.owa.snai.store.app.MainActivity.act;
-import static com.owa.snai.store.app.MainActivity.main;
+import static com.owa.snai.store.app.Main.act;
+import static com.owa.snai.store.app.Main.page;
 
 public class Web extends AppCompatActivity {
 
@@ -166,7 +166,7 @@ public class Web extends AppCompatActivity {
         });
         f = new IntentFilter();
         f.addAction(act);
-        Intent intent = new Intent(this, ConnectionService.class);
+        Intent intent = new Intent(this, netListener.class);
         startService(intent);
         if (net(getApplicationContext()))
             s();
@@ -307,7 +307,7 @@ public class Web extends AppCompatActivity {
 
             conny.setVisibility(View.GONE);
 
-            web.loadUrl(main);
+            web.loadUrl(page);
 
             web.setVisibility(View.VISIBLE);
 
