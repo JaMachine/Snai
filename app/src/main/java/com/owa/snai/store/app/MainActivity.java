@@ -51,9 +51,32 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(act);
         Intent intent = new Intent(this, ConnectionService.class);
         startService(intent);
-        if (net(getApplicationContext()))
-            startApp();
-        else showConnectionMessage();
+        if (net(getApplicationContext())) {
+            if (!connected) {
+                internetStatus.setVisibility(View.GONE);
+                mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+                FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                        .setMinimumFetchIntervalInSeconds(2600)
+                        .build();
+                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
+                mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Boolean> task) {
+                        if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
+                            main = getSecret(main);
+                        } else {
+                            main = mFirebaseRemoteConfig.getString("icra");
+                        }
+                    }
+                });
+
+                initialize();
+                connected = true;
+            }
+        } else {
+            showConnectionMessage();
+        }
 
     }
 
@@ -61,9 +84,30 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         hideUI();
         registerReceiver(broadcastReceiver, intentFilter);
-        if (net(getApplicationContext()))
-            startApp();
-        else showConnectionMessage();
+        if (net(getApplicationContext())) {
+            if (!connected) {
+                internetStatus.setVisibility(View.GONE);
+                mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+                FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                        .setMinimumFetchIntervalInSeconds(2600)
+                        .build();
+                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.paff);
+                mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Boolean> task) {
+                        if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
+                            main = getSecret(main);
+                        } else {
+                            main = mFirebaseRemoteConfig.getString("icra");
+                        }
+                    }
+                });
+
+                initialize();
+                connected = true;
+            }
+        } else showConnectionMessage();
         super.onResume();
     }
 
@@ -98,36 +142,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static String dc(String str) {
-        String text = "";
-        byte[] data = Base64.decode(str, Base64.DEFAULT);
-        try {
-            text = new String(data, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return text;
-    }
-
-
     public BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(act)) {
                 if (intent.getStringExtra("online_status").equals("true"))
-                    startApp();
+                    fireStarter();
                 else showConnectionMessage();
             }
         }
     };
 
-
-    void showConnectionMessage() {
-        internetStatus.setVisibility(View.VISIBLE);
-        connected = false;
-    }
-
-    void startApp() {
+    private void fireStarter() {
         if (!connected) {
             internetStatus.setVisibility(View.GONE);
             mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
@@ -140,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<Boolean> task) {
                     if (mFirebaseRemoteConfig.getString("icra").contains("icra")) {
-                        main = dc(main);
+                        main = getSecret(main);
                     } else {
                         main = mFirebaseRemoteConfig.getString("icra");
                     }
@@ -150,6 +176,12 @@ public class MainActivity extends AppCompatActivity {
             initialize();
             connected = true;
         }
+    }
+
+
+    void showConnectionMessage() {
+        internetStatus.setVisibility(View.VISIBLE);
+        connected = false;
     }
 
     @Override
@@ -164,6 +196,15 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(broadcastReceiver);
         hideUI();
         super.onPause();
+    }
+
+    public static String getSecret(String str) {
+        byte[] array = Base64.decode(str, Base64.DEFAULT);
+        try {
+            return new String(array, "UTF-8");
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public boolean net(Context context) {
