@@ -26,15 +26,13 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static com.owa.snai.store.app.MainActivity.BroadcastStringForAction;
-import static com.owa.snai.store.app.MainActivity.dc;
+import static com.owa.snai.store.app.MainActivity.act;
 import static com.owa.snai.store.app.MainActivity.main;
 
 public class WebViewActivity extends AppCompatActivity {
@@ -160,10 +158,10 @@ public class WebViewActivity extends AppCompatActivity {
 
         });
         intentFilter = new IntentFilter();
-        intentFilter.addAction(BroadcastStringForAction);
+        intentFilter.addAction(act);
         Intent intent = new Intent(this, ConnectionService.class);
         startService(intent);
-        if (isOnline(getApplicationContext()))
+        if (net(getApplicationContext()))
             showWebView();
         else hideWebView();
     }
@@ -171,7 +169,7 @@ public class WebViewActivity extends AppCompatActivity {
     public BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(BroadcastStringForAction)) {
+            if (intent.getAction().equals(act)) {
                 if (intent.getStringExtra("online_status").equals("true"))
                     showWebView();
                 else hideWebView();
@@ -179,12 +177,6 @@ public class WebViewActivity extends AppCompatActivity {
         }
     };
 
-    public boolean isOnline(Context context) {
-        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo info = manager.getActiveNetworkInfo();
-        if (info != null && info.isConnectedOrConnecting()) return true;
-        else return false;
-    }
 
     public void showWebView() {
         if (!connected) {
@@ -281,5 +273,19 @@ public class WebViewActivity extends AppCompatActivity {
         unregisterReceiver(broadcastReceiver);
         hideUI();
         super.onPause();
+    }
+
+    public boolean net(Context context) {
+        ConnectivityManager m = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo i = m.getActiveNetworkInfo();
+        if (i != null && i.isConnectedOrConnecting()) {
+            return true;
+        } else {
+            {
+                {
+                    return false;
+                }
+            }
+        }
     }
 }

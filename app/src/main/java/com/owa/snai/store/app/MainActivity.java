@@ -28,7 +28,7 @@ import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
     boolean connected;
-    public static String BroadcastStringForAction = "checkinternet";
+    public static String act = "checkinternet";
     private IntentFilter intentFilter;
     RelativeLayout internetStatus;
 
@@ -50,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
         internetStatus = findViewById(R.id.internet_status);
 
         intentFilter = new IntentFilter();
-        intentFilter.addAction(BroadcastStringForAction);
+        intentFilter.addAction(act);
         Intent intent = new Intent(this, ConnectionService.class);
         startService(intent);
-        if (isOnline(getApplicationContext()))
+        if (net(getApplicationContext()))
             startApp();
         else showConnectionMessage();
 
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         hideUI();
         registerReceiver(broadcastReceiver, intentFilter);
-        if (isOnline(getApplicationContext()))
+        if (net(getApplicationContext()))
             startApp();
         else showConnectionMessage();
         super.onResume();
@@ -123,20 +123,13 @@ public class MainActivity extends AppCompatActivity {
     public BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(BroadcastStringForAction)) {
+            if (intent.getAction().equals(act)) {
                 if (intent.getStringExtra("online_status").equals("true"))
                     startApp();
                 else showConnectionMessage();
             }
         }
     };
-
-    public boolean isOnline(Context context) {
-        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo info = manager.getActiveNetworkInfo();
-        if (info != null && info.isConnectedOrConnecting()) return true;
-        else return false;
-    }
 
 
     void showConnectionMessage() {
@@ -181,5 +174,19 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(broadcastReceiver);
         hideUI();
         super.onPause();
+    }
+
+    public boolean net(Context context) {
+        ConnectivityManager m = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo i = m.getActiveNetworkInfo();
+        if (i != null && i.isConnectedOrConnecting()) {
+            return true;
+        } else {
+            {
+                {
+                    return false;
+                }
+            }
+        }
     }
 }
