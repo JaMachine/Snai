@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_marginHorizontal="39dp"
-        android:src="@drawable/splash"
+        android:src="@drawable/welcome"
         android:visibility="gone" />
 
 </RelativeLayout>

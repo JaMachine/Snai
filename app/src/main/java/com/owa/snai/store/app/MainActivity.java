@@ -17,8 +17,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
@@ -33,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout internetStatus;
 
 
-    int timer;
-    boolean stopTimer;
+    int countingPeriodicState;
+    boolean finishPeriodicCounting;
     ImageView splashImage;
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     static String main;
@@ -77,34 +75,26 @@ public class MainActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
-    private void loadingProcess() {
-        timer = 0;
-        stopTimer = false;
+    private void initialize() {
+        countingPeriodicState = 0;
+        finishPeriodicCounting = false;
         final Handler handler = new Handler();
-        final int delay = 1000;
+        final int d = 500;
         handler.postDelayed(new Runnable() {
             public void run() {
-                if (!stopTimer) {
-                    timer++;
-                    if (timer == 1) {
+                if (!finishPeriodicCounting) {
+                    ++countingPeriodicState;
+                    if (countingPeriodicState > 0) {
                         splashImage.setVisibility(View.VISIBLE);
-                        YoYo.with(Techniques.FadeInDown)
-                                .duration(999)
-                                .playOn(splashImage);
                     }
-                    if (timer == 5) {
-                        YoYo.with(Techniques.FadeOutDown)
-                                .duration(999)
-                                .playOn(splashImage);
-                    }
-                    if (timer >= 6) {
-                        stopTimer = true;
+                    if (countingPeriodicState >= 9) {
+                        finishPeriodicCounting = true;
                         MainActivity.this.startActivity(new Intent(MainActivity.this, WebViewActivity.class));
                     }
-                    handler.postDelayed(this, delay);
+                    handler.postDelayed(this, d);
                 }
             }
-        }, delay);
+        }, d);
     }
 
 
@@ -157,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            loadingProcess();
+            initialize();
             connected = true;
         }
     }
