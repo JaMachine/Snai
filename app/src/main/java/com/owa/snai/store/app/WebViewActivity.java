@@ -25,7 +25,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +38,11 @@ import static com.owa.snai.store.app.MainActivity.main;
 public class WebViewActivity extends AppCompatActivity {
     boolean connected;
     private IntentFilter intentFilter;
-    RelativeLayout netStatus;
 
-    WebView webView;
+    WebView web;
     private ValueCallback<Uri> mUploadMessage;
     private Uri mCapturedImageURI = null;
+    TextView conny;
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
     private static final int INPUT_FILE_REQUEST_CODE = 1;
@@ -55,22 +55,22 @@ public class WebViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_web_view);
         hideUI();
 
-        netStatus = findViewById(R.id.web_view_internet_status);
+        conny = findViewById(R.id.conny);
 
 
-        webView = findViewById(R.id.web_view);
+        web = findViewById(R.id.web_view);
         if (Build.VERSION.SDK_INT >= 23 && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(WebViewActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
         }
-        webView.setWebViewClient(new WebViewClient());
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setLoadsImagesAutomatically(true);
+        web.setWebViewClient(new WebViewClient());
+        web.getSettings().setJavaScriptEnabled(true);
+        web.getSettings().setAllowFileAccess(true);
+        web.getSettings().setDomStorageEnabled(true);
+        web.getSettings().setLoadsImagesAutomatically(true);
         if (savedInstanceState != null)
-            webView.restoreState(savedInstanceState.getBundle("webViewState"));
+            web.restoreState(savedInstanceState.getBundle("webViewState"));
 
-        webView.setWebChromeClient(new WebChromeClient() {
+        web.setWebChromeClient(new WebChromeClient() {
             private File createImageFile() throws IOException {
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 String imageFileName = "JPEG_" + timeStamp + "_";
@@ -180,17 +180,17 @@ public class WebViewActivity extends AppCompatActivity {
 
     public void showWebView() {
         if (!connected) {
-            netStatus.setVisibility(View.GONE);
-            webView.loadUrl(main);
-            webView.setVisibility(View.VISIBLE);
+            conny.setVisibility(View.GONE);
+            web.loadUrl(main);
+            web.setVisibility(View.VISIBLE);
             connected = true;
         }
     }
 
     public void hideWebView() {
         connected = false;
-        netStatus.setVisibility(View.VISIBLE);
-        webView.setVisibility(View.GONE);
+        conny.setVisibility(View.VISIBLE);
+        web.setVisibility(View.GONE);
     }
 
     @Override
@@ -242,7 +242,7 @@ public class WebViewActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) webView.goBack();
+        if (web.canGoBack()) web.goBack();
         else super.onBackPressed();
     }
 

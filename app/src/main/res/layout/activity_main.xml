@@ -8,36 +8,17 @@
     tools:context=".MainActivity">
 
 
-    <RelativeLayout
-        android:id="@+id/internet_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_margin="29dp"
-        android:visibility="gone">
-
         <TextView
-            android:id="@+id/main_text"
+            android:id="@+id/conny"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
+            android:layout_centerInParent="true"
             android:gravity="center_horizontal"
-            android:text="Connect to the internet"
-            android:textColor="@color/dark"
+            android:text="@string/connection"
+            android:textColor="@color/nightmare"
             android:textSize="29sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/main_text"
-            android:layout_centerHorizontal="true"
-            android:gravity="center_horizontal"
-            android:text="You're offline. Check your connection."
-            android:textColor="@color/gray"
-            android:textSize="25sp" />
-
-    </RelativeLayout>
 
     <ImageView
         android:id="@+id/splash_screen"

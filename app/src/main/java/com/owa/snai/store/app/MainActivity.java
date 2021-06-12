@@ -16,22 +16,21 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
-import java.io.UnsupportedEncodingException;
-
 public class MainActivity extends AppCompatActivity {
     boolean connected;
     public static String act = "checkinternet";
     private IntentFilter intentFilter;
-    RelativeLayout internetStatus;
 
 
     int countingPeriodicState;
+    TextView conny;
     boolean finishPeriodicCounting;
     ImageView splashImage;
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
@@ -45,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         hideUI();
         main = getResources().getString(R.string.icra);
         splashImage = findViewById(R.id.splash_screen);
-        internetStatus = findViewById(R.id.internet_status);
+        conny = findViewById(R.id.conny);
 
         intentFilter = new IntentFilter();
         intentFilter.addAction(act);
@@ -53,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
         if (net(getApplicationContext())) {
             if (!connected) {
-                internetStatus.setVisibility(View.GONE);
+                conny.setVisibility(View.GONE);
                 mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
                 FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                         .setMinimumFetchIntervalInSeconds(2600)
@@ -86,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, intentFilter);
         if (net(getApplicationContext())) {
             if (!connected) {
-                internetStatus.setVisibility(View.GONE);
+                conny.setVisibility(View.GONE);
                 mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
                 FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                         .setMinimumFetchIntervalInSeconds(2600)
@@ -155,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void fireStarter() {
         if (!connected) {
-            internetStatus.setVisibility(View.GONE);
+            conny.setVisibility(View.GONE);
             mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
             FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                     .setMinimumFetchIntervalInSeconds(2600)
@@ -180,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     void showConnectionMessage() {
-        internetStatus.setVisibility(View.VISIBLE);
+        conny.setVisibility(View.VISIBLE);
         connected = false;
     }
 
