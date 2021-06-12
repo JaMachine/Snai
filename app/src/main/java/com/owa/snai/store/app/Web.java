@@ -35,38 +35,45 @@ import java.util.Date;
 import static com.owa.snai.store.app.MainActivity.act;
 import static com.owa.snai.store.app.MainActivity.main;
 
-public class WebViewActivity extends AppCompatActivity {
-    boolean connected;
-    private IntentFilter intentFilter;
+public class Web extends AppCompatActivity {
 
-    WebView web;
-    private ValueCallback<Uri> mUploadMessage;
-    private Uri mCapturedImageURI = null;
-    TextView conny;
-    private ValueCallback<Uri[]> mFilePathCallback;
-    private String mCameraPhotoPath;
-    private static final int INPUT_FILE_REQUEST_CODE = 1;
-    private static final int FILECHOOSER_RESULTCODE = 1;
+    private static int REQc = 2 - 1;
+    private static int RESc = 2 - 1;
+    private WebView web;
+    private ValueCallback<Uri> msg;
+    private Uri ciUri = null;
+    private TextView conny;
+    boolean bbc;
+    private IntentFilter f;
+    private ValueCallback<Uri[]> fc;
+    private String cpf;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
-        hideUI();
+
 
         conny = findViewById(R.id.conny);
 
 
         web = findViewById(R.id.web_view);
         if (Build.VERSION.SDK_INT >= 23 && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(WebViewActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
+            ActivityCompat.requestPermissions(Web.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
         }
         web.setWebViewClient(new WebViewClient());
         web.getSettings().setJavaScriptEnabled(true);
-        web.getSettings().setAllowFileAccess(true);
-        web.getSettings().setDomStorageEnabled(true);
+        removeNavs();
+
+// web
         web.getSettings().setLoadsImagesAutomatically(true);
+
+        web.getSettings().setDomStorageEnabled(true);
+
+        web.getSettings().setAllowFileAccess(true);
+
+
         if (savedInstanceState != null)
             web.restoreState(savedInstanceState.getBundle("webViewState"));
 
@@ -86,21 +93,21 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePath, WebChromeClient.FileChooserParams fileChooserParams) {
-                if (mFilePathCallback != null) {
-                    mFilePathCallback.onReceiveValue(null);
+                if (fc != null) {
+                    fc.onReceiveValue(null);
                 }
-                mFilePathCallback = filePath;
+                fc = filePath;
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                     File photoFile = null;
                     try {
                         photoFile = createImageFile();
-                        takePictureIntent.putExtra("PhotoPath", mCameraPhotoPath);
+                        takePictureIntent.putExtra("PhotoPath", cpf);
                     } catch (IOException e) {
                         e.fillInStackTrace();
                     }
                     if (photoFile != null) {
-                        mCameraPhotoPath = "file:" + photoFile.getAbsolutePath();
+                        cpf = "file:" + photoFile.getAbsolutePath();
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                                 Uri.fromFile(photoFile));
                     } else {
@@ -120,12 +127,12 @@ public class WebViewActivity extends AppCompatActivity {
                 chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
                 chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
-                startActivityForResult(chooserIntent, INPUT_FILE_REQUEST_CODE);
+                startActivityForResult(chooserIntent, REQc);
                 return true;
             }
 
             public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
-                mUploadMessage = uploadMsg;
+                msg = uploadMsg;
                 File imageStorageDir = new File(
                         Environment.getExternalStoragePublicDirectory(
                                 Environment.DIRECTORY_PICTURES)
@@ -137,17 +144,17 @@ public class WebViewActivity extends AppCompatActivity {
                         imageStorageDir + File.separator + "IMG_"
                                 + String.valueOf(System.currentTimeMillis())
                                 + ".jpg");
-                mCapturedImageURI = Uri.fromFile(file);
+                ciUri = Uri.fromFile(file);
                 final Intent captureIntent = new Intent(
                         android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCapturedImageURI);
+                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, ciUri);
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("image/*");
                 Intent chooserIntent = Intent.createChooser(i, "Image Chooser");
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS
                         , new Parcelable[]{captureIntent});
-                startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
+                startActivityForResult(chooserIntent, RESc);
             }
 
             public void openFileChooser(ValueCallback<Uri> uploadMsg,
@@ -157,54 +164,49 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
         });
-        intentFilter = new IntentFilter();
-        intentFilter.addAction(act);
+        f = new IntentFilter();
+        f.addAction(act);
         Intent intent = new Intent(this, ConnectionService.class);
         startService(intent);
         if (net(getApplicationContext()))
-            showWebView();
-        else hideWebView();
+            s();
+        else h();
     }
 
-    public BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    public BroadcastReceiver r = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(act)) {
                 if (intent.getStringExtra("online_status").equals("true"))
-                    showWebView();
-                else hideWebView();
+                    s();
+                else h();
             }
         }
     };
 
 
-    public void showWebView() {
-        if (!connected) {
-            conny.setVisibility(View.GONE);
-            web.loadUrl(main);
-            web.setVisibility(View.VISIBLE);
-            connected = true;
-        }
-    }
+    // hd
+    public void h() {
 
-    public void hideWebView() {
-        connected = false;
         conny.setVisibility(View.VISIBLE);
+
+        bbc = false;
+
         web.setVisibility(View.GONE);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (requestCode != INPUT_FILE_REQUEST_CODE || mFilePathCallback == null) {
+            if (requestCode != REQc || fc == null) {
                 super.onActivityResult(requestCode, resultCode, data);
                 return;
             }
             Uri[] results = null;
             if (resultCode == Activity.RESULT_OK) {
                 if (data == null) {
-                    if (mCameraPhotoPath != null) {
-                        results = new Uri[]{Uri.parse(mCameraPhotoPath)};
+                    if (cpf != null) {
+                        results = new Uri[]{Uri.parse(cpf)};
                     }
                 } else {
                     String dataString = data.getDataString();
@@ -213,15 +215,15 @@ public class WebViewActivity extends AppCompatActivity {
                     }
                 }
             }
-            mFilePathCallback.onReceiveValue(results);
-            mFilePathCallback = null;
+            fc.onReceiveValue(results);
+            fc = null;
         } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            if (requestCode != FILECHOOSER_RESULTCODE || mUploadMessage == null) {
+            if (requestCode != RESc || msg == null) {
                 super.onActivityResult(requestCode, resultCode, data);
                 return;
             }
-            if (requestCode == FILECHOOSER_RESULTCODE) {
-                if (null == this.mUploadMessage) {
+            if (requestCode == RESc) {
+                if (null == this.msg) {
                     return;
                 }
                 Uri result = null;
@@ -229,52 +231,59 @@ public class WebViewActivity extends AppCompatActivity {
                     if (resultCode != RESULT_OK) {
                         result = null;
                     } else {
-                        result = data == null ? mCapturedImageURI : data.getData();
+                        result = data == null ? ciUri : data.getData();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                mUploadMessage.onReceiveValue(result);
-                mUploadMessage = null;
+                msg.onReceiveValue(result);
+                msg = null;
             }
         }
     }
 
+    // undo
     @Override
     public void onBackPressed() {
         if (web.canGoBack()) web.goBack();
         else super.onBackPressed();
     }
 
+    //register
     @Override
     protected void onResume() {
-        hideUI();
-        registerReceiver(broadcastReceiver, intentFilter);
+        removeNavs();
+        registerReceiver(r, f);
         super.onResume();
     }
 
-    private void hideUI() {
+    //remove
+    private void removeNavs() {
+        View screen = findViewById(R.id.yyy);
+        screen.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        View overlay = findViewById(R.id.web_view_screen);
-        overlay.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
+    //register
     @Override
     protected void onRestart() {
-        registerReceiver(broadcastReceiver, intentFilter);
-        hideUI();
+        registerReceiver(r, f);
+        removeNavs();
         super.onRestart();
     }
 
+    //unregister
     @Override
     protected void onPause() {
-        unregisterReceiver(broadcastReceiver);
-        hideUI();
+        unregisterReceiver(r);
+        removeNavs();
         super.onPause();
     }
 
+    // check
     public boolean net(Context context) {
         ConnectivityManager m = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo i = m.getActiveNetworkInfo();
@@ -286,6 +295,22 @@ public class WebViewActivity extends AppCompatActivity {
                     return false;
                 }
             }
+        }
+    }
+
+
+    // shw
+    public void s() {
+        if (!bbc) {
+
+            bbc = true;
+
+            conny.setVisibility(View.GONE);
+
+            web.loadUrl(main);
+
+            web.setVisibility(View.VISIBLE);
+
         }
     }
 }

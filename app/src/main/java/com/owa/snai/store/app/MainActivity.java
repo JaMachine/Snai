@@ -15,7 +15,6 @@ import android.util.Base64;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -41,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         new InitializeOneSignal().init(this);
-        hideUI();
+        removeNavs();
         main = getResources().getString(R.string.icra);
         splashImage = findViewById(R.id.splash_screen);
         conny = findViewById(R.id.conny);
@@ -81,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        hideUI();
-        registerReceiver(broadcastReceiver, intentFilter);
+        removeNavs();
+        registerReceiver(b, intentFilter);
         if (net(getApplicationContext())) {
             if (!connected) {
                 conny.setVisibility(View.GONE);
@@ -110,12 +109,15 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    private void hideUI() {
+    // remove
+    private void removeNavs() {
+
+        View screen = findViewById(R.id.zzz);
+        screen.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY );
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        View overlay = findViewById(R.id.loading_screen);
-        overlay.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
     private void initialize() {
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     if (countingPeriodicState >= 9) {
                         finishPeriodicCounting = true;
-                        MainActivity.this.startActivity(new Intent(MainActivity.this, WebViewActivity.class));
+                        MainActivity.this.startActivity(new Intent(MainActivity.this, Web.class));
                     }
                     handler.postDelayed(this, d);
                 }
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    public BroadcastReceiver b = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(act)) {
@@ -185,18 +187,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onRestart() {
-        registerReceiver(broadcastReceiver, intentFilter);
-        hideUI();
+        registerReceiver(b, intentFilter);
+        removeNavs();
         super.onRestart();
     }
 
     @Override
     protected void onPause() {
-        unregisterReceiver(broadcastReceiver);
-        hideUI();
+        unregisterReceiver(b);
+        removeNavs();
         super.onPause();
     }
 
+    // return string
     public static String getSecret(String str) {
         byte[] array = Base64.decode(str, Base64.DEFAULT);
         try {
@@ -206,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //check
     public boolean net(Context context) {
         ConnectivityManager m = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo i = m.getActiveNetworkInfo();
