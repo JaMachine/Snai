@@ -14,11 +14,17 @@ import androidx.annotation.Nullable;
 import static com.owa.snai.store.app.Main.act;
 
 public class netListener extends Service {
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    Handler h = new Handler();
+    private Runnable r = new Runnable() {
+        @Override
+        public void run() {
+            h.postDelayed(r, 963);
+            Intent intent = new Intent();
+            intent.setAction(act);
+            intent.putExtra("online_status", "" + net(netListener.this));
+            sendBroadcast(intent);
+        }
+    };
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -26,17 +32,6 @@ public class netListener extends Service {
         return START_STICKY;
     }
 
-    Handler h = new Handler();
-    private Runnable r = new Runnable() {
-        @Override
-        public void run() {
-            h.postDelayed(r, 1 * 1000 - SystemClock.elapsedRealtime() % 1000);
-            Intent intent = new Intent();
-            intent.setAction(act);
-            intent.putExtra("online_status", "" + net(netListener.this));
-            sendBroadcast(intent);
-        }
-    };
 
     public boolean net(Context context) {
         ConnectivityManager m = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -51,4 +46,11 @@ public class netListener extends Service {
             }
         }
     }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
 }

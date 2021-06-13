@@ -33,12 +33,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.owa.snai.store.app.Main.act;
-import static com.owa.snai.store.app.Main.page;
 
 public class Web extends AppCompatActivity {
 
-    private static int REQc = 2 - 1;
-    private static int RESc = 2 - 1;
+    public static String page;
+    private int REQc = 2 - 1;
+    private int RESc = 2 - 1;
     private WebView web;
     private ValueCallback<Uri> msg;
     private Uri ciUri = null;

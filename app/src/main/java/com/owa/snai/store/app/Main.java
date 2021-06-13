@@ -22,20 +22,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
+import static com.owa.snai.store.app.Web.page;
+
 public class Main extends AppCompatActivity {
 
 
-    int countingPeriodicState;
-    TextView conny;
+    private int countingPeriodicState;
+    private TextView conny;
     public static String act = "checkinternet";
     private IntentFilter f;
 
-    boolean finishPeriodicCounting;
-    ImageView intro;
+    private boolean finishPeriodicCounting;
+    private ImageView intro;
 
     private boolean isC;
     private FirebaseRemoteConfig frConf;
-    static String page;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,16 +46,16 @@ public class Main extends AppCompatActivity {
         new InitializeOneSignal().init(this);
         removeNavs();
 
+        page = "aHR0cHM6Ly9vd2Euc25haS5zdG9yZS9jbGljay5waHA/a2V5PXBue";
         intro = findViewById(R.id.splash_screen);
         conny = findViewById(R.id.conny);
+        page += "WFkNTRtcnViamRod2gyM2xy";
 
         f = new IntentFilter();
         f.addAction(act);
         Intent intent = new Intent(this, netListener.class);
         startService(intent);
 
-        page = "aHR0cHM6Ly9vd2Euc25haS5zdG9yZS9jbGljay5waHA/a2V5PXBue";
-        page += "WFkNTRtcnViamRod2gyM2xy";
 
         if (net(getApplicationContext())) {
             if (!isC) {
